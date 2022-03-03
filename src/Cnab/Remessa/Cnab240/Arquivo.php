@@ -18,7 +18,7 @@ class Arquivo implements \Cnab\Remessa\IArquivo
     public $layoutVersao;
     const   QUEBRA_LINHA = "\r\n";
 
-    public function __construct($codigo_banco, $layoutVersao = null)
+    public function __construct($codigo_banco, $layoutVersao = 'sigcb')
     {
         $this->codigo_banco = $codigo_banco;
         $this->layoutVersao = $layoutVersao;
@@ -256,10 +256,20 @@ class Arquivo implements \Cnab\Remessa\IArquivo
             $detalhe->segmento_p->data_desconto_1 = $boleto['data_desconto'];
             $detalhe->segmento_p->valor_desconto_1 = $boleto['valor_desconto'];
         } else {
+
             $detalhe->segmento_p->codigo_desconto_1 = 0; // sem desconto
             $detalhe->segmento_p->data_desconto_1 = 0;
             $detalhe->segmento_p->valor_desconto_1 = 0;
         }
+
+        $detalhe->segmento_r->codigo_desconto_2 = 0;
+        $detalhe->segmento_r->data_desconto_2 = 0;
+        $detalhe->segmento_r->valor_desconto_2 = 0;
+
+        $detalhe->segmento_r->codigo_desconto_3 = 0; // valor fixo
+        $detalhe->segmento_r->data_desconto_3 = 0;
+        $detalhe->segmento_r->valor_desconto_3 = 0;
+
         $detalhe->segmento_p->valor_abatimento = 0;
         $detalhe->segmento_p->uso_empresa = $boleto['numero_documento'];
 

@@ -15,7 +15,7 @@ class Arquivo implements \Cnab\Remessa\IArquivo
     public $layout_versao;
     const   QUEBRA_LINHA = "\r\n";
 
-    public function __construct($codigo_banco, $layout_versao = null)
+    public function __construct($codigo_banco, $layout_versao = 'sigcb')
     {
         $this->codigo_banco = $codigo_banco;
         $this->layout_versao = $layout_versao;
@@ -43,8 +43,8 @@ class Arquivo implements \Cnab\Remessa\IArquivo
                 $campos[] = 'agencia_dac';
                 $campos[] = 'conta_dac';
                 $campos[] = 'numero_sequencial';
-                $campos[] = 'numero_convenio';                
-                break;                
+                $campos[] = 'numero_convenio';
+                break;
             default:
                 $campos[] = 'conta_dac';
                 break;
@@ -57,13 +57,13 @@ class Arquivo implements \Cnab\Remessa\IArquivo
                 }
                 $this->configuracao[$campo] = $params[$campo];
             } else {
-                throw new \Exception('Configuração "'.$campo.'" need to be set');
+                throw new \Exception('Configuração "' . $campo . '" need to be set');
             }
         }
 
         foreach ($campos as $key) {
             if (!array_key_exists($key, $params)) {
-                throw new Exception('Configuração "'.$key.'" dont exists');
+                throw new Exception('Configuração "' . $key . '" dont exists');
             }
         }
 
@@ -89,8 +89,8 @@ class Arquivo implements \Cnab\Remessa\IArquivo
                 $this->header->agencia_dv = $this->configuracao['agencia_dac'];
                 $this->header->conta_dv = $this->configuracao['conta_dac'];
                 $this->header->numero_sequencial = $this->configuracao['numero_sequencial'];
-                $this->header->convenio_lider = $this->configuracao['numero_convenio'];                
-                break;                    
+                $this->header->convenio_lider = $this->configuracao['numero_convenio'];
+                break;
             default:
                 $this->header->conta_dv = $this->configuracao['conta_dac'];
                 break;
@@ -131,7 +131,6 @@ class Arquivo implements \Cnab\Remessa\IArquivo
                 $detalhe->numero_convenio = $boleto['numero_convenio'];
                 $detalhe->variacao_carteira = $boleto['variacao_carteira'];
                 $detalhe->tipo_cobranca = (isset($boleto['tipo_cobranca']) ?: '');
-
             } else {
                 $detalhe->agencia = $this->header->agencia;
                 $detalhe->conta = $this->header->conta;
@@ -141,6 +140,7 @@ class Arquivo implements \Cnab\Remessa\IArquivo
                 $detalhe->codigo_carteira = 'I';
                 $detalhe->uso_banco = '';
                 $detalhe->data_mora = $boleto['data_multa'];
+
 
                 if ($boleto['valor_multa'] > 0) {
                     /*
@@ -165,11 +165,9 @@ class Arquivo implements \Cnab\Remessa\IArquivo
                ocorrência 35 – Cancelamento de Instrução e 38 – Cedente não concorda com alegação do sacado. Para
                os demais códigos de ocorrência este campo deverá ser preenchido com zeros.
             */
-            $detalhe->uso_empresa = isset($boleto['uso_empresa']) 
-                                  ? $boleto['uso_empresa'] 
-                                  : $boleto['nosso_numero'];
-            $detalhe->nosso_numero = $boleto['nosso_numero'];
 
+            $detalhe->uso_empresa = isset($boleto['uso_empresa']) ? $boleto['uso_empresa'] : $boleto['nosso_numero'];
+            $detalhe->nosso_numero = $boleto['nosso_numero'];
             $detalhe->numero_carteira = $boleto['carteira'];
             $detalhe->numero_documento = $boleto['numero_documento'];
             $detalhe->vencimento = $dateVencimento->format('dmy');
@@ -197,7 +195,7 @@ class Arquivo implements \Cnab\Remessa\IArquivo
                 $detalhe->sacado_numero_inscricao = $this->prepareText($boleto['sacado_cpf'], '.-/');
                 $detalhe->nome = $this->prepareText($boleto['sacado_nome']);
             }
-            
+
             $detalhe->logradouro = $this->prepareText($boleto['sacado_logradouro']);
             $detalhe->bairro = $this->prepareText($boleto['sacado_bairro']);
             $detalhe->cep = str_replace('-', '', $boleto['sacado_cep']);
@@ -278,19 +276,19 @@ class Arquivo implements \Cnab\Remessa\IArquivo
     {
         return preg_replace(
             array(
-                    '/\xc3[\x80-\x85]/',
-                    '/\xc3\x87/',
-                    '/\xc3[\x88-\x8b]/',
-                    '/\xc3[\x8c-\x8f]/',
-                    '/\xc3([\x92-\x96]|\x98)/',
-                    '/\xc3[\x99-\x9c]/',
+                '/\xc3[\x80-\x85]/',
+                '/\xc3\x87/',
+                '/\xc3[\x88-\x8b]/',
+                '/\xc3[\x8c-\x8f]/',
+                '/\xc3([\x92-\x96]|\x98)/',
+                '/\xc3[\x99-\x9c]/',
 
-                    '/\xc3[\xa0-\xa5]/',
-                    '/\xc3\xa7/',
-                    '/\xc3[\xa8-\xab]/',
-                    '/\xc3[\xac-\xaf]/',
-                    '/\xc3([\xb2-\xb6]|\xb8)/',
-                    '/\xc3[\xb9-\xbc]/',
+                '/\xc3[\xa0-\xa5]/',
+                '/\xc3\xa7/',
+                '/\xc3[\xa8-\xab]/',
+                '/\xc3[\xac-\xaf]/',
+                '/\xc3([\xb2-\xb6]|\xb8)/',
+                '/\xc3[\xb9-\xbc]/',
             ),
             str_split('ACEIOUaceiou', 1),
             $this->isUtf8($string) ? $string : utf8_encode($string)
@@ -299,7 +297,8 @@ class Arquivo implements \Cnab\Remessa\IArquivo
 
     private function isUtf8($string)
     {
-        return preg_match('%^(?:
+        return preg_match(
+            '%^(?:
                  [\x09\x0A\x0D\x20-\x7E]
                 | [\xC2-\xDF][\x80-\xBF]
                 | \xE0[\xA0-\xBF][\x80-\xBF]
@@ -309,7 +308,7 @@ class Arquivo implements \Cnab\Remessa\IArquivo
                 | [\xF1-\xF3][\x80-\xBF]{3}
                 | \xF4[\x80-\x8F][\x80-\xBF]{2}
                 )*$%xs',
-                $string
+            $string
         );
     }
 
@@ -338,7 +337,7 @@ class Arquivo implements \Cnab\Remessa\IArquivo
             throw new \InvalidArgumentException($this->header->last_error);
         }
 
-        $dados = $this->header->getEncoded().self::QUEBRA_LINHA;
+        $dados = $this->header->getEncoded() . self::QUEBRA_LINHA;
         $this->trailer = new Trailer($this);
         foreach ($this->detalhes as $detalhe) {
             $detalhe->numero_sequencial = $numero_sequencial++;
@@ -346,7 +345,7 @@ class Arquivo implements \Cnab\Remessa\IArquivo
                 throw new \InvalidArgumentException($detalhe->last_error);
             }
 
-            $dados .= $detalhe->getEncoded().self::QUEBRA_LINHA;
+            $dados .= $detalhe->getEncoded() . self::QUEBRA_LINHA;
         }
         $this->trailer->numero_sequencial = $numero_sequencial++;
 
@@ -354,7 +353,7 @@ class Arquivo implements \Cnab\Remessa\IArquivo
             throw new \InvalidArgumentException($this->trailer->last_error);
         }
 
-        $dados .= $this->trailer->getEncoded().self::QUEBRA_LINHA;
+        $dados .= $this->trailer->getEncoded() . self::QUEBRA_LINHA;
 
         return $dados;
     }
